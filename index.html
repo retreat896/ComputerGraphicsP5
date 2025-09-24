@@ -61,7 +61,7 @@
                         $(document).ready(function () {
                             // Fetch high scores from the server
                             $.ajax({
-                                url: 'p5api.retreat896.com/scores',
+                                url: 'https://p5api.retreat896.com/scores',
                                 method: 'GET',
                                 success: function (data) {
                                     const scoresList = $('#scorelist');
@@ -125,7 +125,7 @@
                         data-dialog-close="true"
                         class="rounded-md bg-green-600 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-green-700 focus:shadow-none active:bg-green-700 hover:bg-green-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none ml-2"
                         type="button"
-                        onclick="resetGame(); submitscore();"
+                        onclick="resetGame(); submitscore(); $('#dialog').addClass('opacity-0 pointer-events-none')"
                         disabled>
                         Yes
                     </button>

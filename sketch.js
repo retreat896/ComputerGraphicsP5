@@ -717,7 +717,7 @@ function showScoreModal() {
 
 function submitscore() {
     $.ajax({
-        url: 'p5api.retreat896.com/addScore',
+        url: 'https://p5api.retreat896.com/addScore',
         method: 'POST',
         data: {
             username: $('#usernameInput').val(),
