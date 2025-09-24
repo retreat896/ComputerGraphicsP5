@@ -1,6 +1,7 @@
+
 let benchy;
 let font;
-const DEBUG_MODE = true;  // set to false to remove hitboxes
+const DEBUG_MODE = true; // set to false to remove hitboxes
 let performanceMode = false;
 let performanceBackground;
 
@@ -11,32 +12,31 @@ let aPressed = false;
 let sPressed = false;
 let dPressed = false;
 let shiftPressed = false;
-let faceForward = true;    // tracks which way benchy is facing
+let faceForward = true; // tracks which way benchy is facing
 
 // === GAME VARIABLES ===
 let gameState = 'playing';
 let score = 0;
 let highScore = 0;
-let deathTimer = 0;
-let freezeTimer = 0;     // for "level" transitions
+let freezeTimer = 0; // for "level" transitions
 let level = 1;
 
 // === PLAYER SETTINGS ===
 let benchyConfig = {
-    x: 0,                // current x pos
-    y: 400,              // current y pos
-    z: 75,               // current z pos - DOES NOT CHANGE
-    velocityY: 0,        // stores the y velocity
-    velocityX: 0,        // stores the x velocity
-    speed: 8,            // default speed
-    sprintSpeed: 15,     // how fast the benchy moves when holding shift
-    walkSpeed: 8,        // how fast the benchy moves when it is moving by default
-    gravity: -0.5,       // gravity is backwards because webgl uses negatives for y-Pos
-    jumpForce: 12,       // makes benchy jump higher
-    groundY: 0,          // used for ground collisions
-    isJumping: false,    // self explanitory
-    acf: 0.08,           // air control factor - lower = less air control
-    ga: 0.2,             // ground acceleration - higher = snappier movement
+    x: 0, // current x pos
+    y: 400, // current y pos
+    z: 75, // current z pos - DOES NOT CHANGE
+    velocityY: 0, // stores the y velocity
+    velocityX: 0, // stores the x velocity
+    speed: 8, // default speed
+    sprintSpeed: 15, // how fast the benchy moves when holding shift
+    walkSpeed: 8, // how fast the benchy moves when it is moving by default
+    gravity: -0.5, // gravity is backwards because webgl uses negatives for y-Pos
+    jumpForce: 12, // makes benchy jump higher
+    groundY: 0, // used for ground collisions
+    isJumping: false, // self explanitory
+    acf: 0.08, // air control factor - lower = less air control
+    ga: 0.2, // ground acceleration - higher = snappier movement
 };
 
 // Hitbox adjustments
@@ -50,13 +50,13 @@ let hitboxOffsets = {
 };
 
 // === CAMERA SETUP ===
-let cameraConfig = { 
-    z: 800    
+let cameraConfig = {
+    z: 800,
 };
 
 // === LEVEL GENERATION ===
 let scenes = [];
-let sceneWidth = 500;      // default width
+let sceneWidth = 500; // default width
 let lastSceneWidth = sceneWidth;
 let lastSceneX = 0;
 
@@ -72,15 +72,15 @@ let defaultScene = {
 // Load scenes from external file (scenesFile should be defined elsewhere)
 let sceneTemplates = scenesFile;
 
-let parallaxLayers;   // will be populated in preload()
+let parallaxLayers; // will be populated in preload()
 
 // === ASSET LOADING ===
 function preload() {
     // Loading all our assets
-    performanceBackground = loadImage("./water/6.png");
-    benchy = loadModel('./LowPoly3DBenchy.obj');  // our main character!
+    performanceBackground = loadImage('./water/6.png');
+    benchy = loadModel('./LowPoly3DBenchy.obj'); // our main character!
     font = loadFont('font.ttf');
-    
+
     // Parallax background layers - these create nice depth
     parallaxLayers = [
         { y: 140, z: 15, speed: 0.1, img: loadImage('water/1.png'), tileCount: 20, offsetTiles: 3 },
@@ -98,9 +98,9 @@ function preload() {
 function setup() {
     let canvas = createCanvas(800, 600, WEBGL);
     canvas.parent('game-canvas-container');
-    angleMode(DEGREES);    // I find degrees easier to work with than radians
+    angleMode(DEGREES); // I find degrees easier to work with than radians
     textFont(font);
-    
+
     // Start with the default scene and add a few more
     addScene(defaultScene);
     for (let i = 1; i < 4; i++) {
@@ -127,8 +127,8 @@ function getPlayerHitbox() {
 
 // === DEBUG VISUALIZATION ===
 function drawPlayerHitbox() {
-    if (!DEBUG_MODE) return;  // safety check
-    
+    if (!DEBUG_MODE) return; // safety check
+
     let hitbox = getPlayerHitbox();
 
     // Calculate center and dimensions
@@ -141,7 +141,7 @@ function drawPlayerHitbox() {
 
     push();
     noFill();
-    stroke(255, 0, 0);  // bright red so it's easy to see
+    stroke(255, 0, 0); // bright red so it's easy to see
     strokeWeight(2);
     translate(centerX, -centerY, -centerZ); // flip Y for screen coords
     box(w, h, d);
@@ -170,7 +170,7 @@ function isOnGround() {
         }
     }
 
-    return false;  // not on any platform
+    return false; // not on any platform
 }
 
 function applyGravity() {
@@ -201,7 +201,7 @@ function applyGravity() {
                     landedOnPlatform = true;
                     highestPlatformTop = Math.max(highestPlatformTop, platformTop);
                 }
-                
+
                 // Debug visualization for platforms
                 if (DEBUG_MODE) {
                     push();
@@ -275,9 +275,9 @@ function handleSprint() {
     // Gradually adjust speed towards target (sprint vs walk)
     const targetSpeed = shiftPressed ? benchyConfig.sprintSpeed : benchyConfig.walkSpeed;
     if (benchyConfig.speed < targetSpeed) {
-        benchyConfig.speed += 1;  // speed up
+        benchyConfig.speed += 1; // speed up
     } else if (benchyConfig.speed > targetSpeed) {
-        benchyConfig.speed -= 1;  // slow down
+        benchyConfig.speed -= 1; // slow down
     }
 }
 
@@ -297,18 +297,18 @@ function checkObjectCollisions() {
                 // Simple circle-to-rectangle collision
                 let closestX = Math.max(playerHitbox.left, Math.min(coinX, playerHitbox.right));
                 let closestY = Math.max(playerHitbox.bottom, Math.min(coinY, playerHitbox.top));
-                
+
                 if (dist(coinX, coinY, closestX, closestY) < coinRadius) {
-                    scene.coins.splice(i, 1);  // remove collected coin
+                    scene.coins.splice(i, 1); // remove collected coin
                     score += 10;
                 }
 
                 // Debug visualization for coins
                 if (DEBUG_MODE) {
                     push();
-                    ellipseMode(CENTER); 
+                    ellipseMode(CENTER);
                     noFill();
-                    stroke('green'); 
+                    stroke('green');
                     strokeWeight(2);
                     ellipse(scene.startX + coin.x, -coin.y, coinRadius * 2);
                     pop();
@@ -320,11 +320,11 @@ function checkObjectCollisions() {
         if (scene.spikes) {
             for (let spike of scene.spikes) {
                 let spikeX = scene.startX + spike.x;
-                let spikeY = spike.y + 20;  // visual offset
+                let spikeY = spike.y + 20; // visual offset
                 let spikeWidth = 20;
                 let spikeHeight = 20;
 
-                const hitboxPadding = 1;  // small safety margin
+                const hitboxPadding = 1; // small safety margin
                 const safePadding = Math.min(hitboxPadding, spikeWidth / 2);
 
                 // Calculate spike boundaries
@@ -334,11 +334,8 @@ function checkObjectCollisions() {
                 const spikeRight = spikeX + spikeWidth / 2 - safePadding;
 
                 // AABB collision detection
-                if (playerHitbox.right > spikeLeft && 
-                    playerHitbox.left < spikeRight && 
-                    playerHitbox.bottom < spikeTop && 
-                    playerHitbox.top > spikeBottom) {
-                    onDeath();  // ouch!
+                if (playerHitbox.right > spikeLeft && playerHitbox.left < spikeRight && playerHitbox.bottom < spikeTop && playerHitbox.top > spikeBottom) {
+                    onDeath();
                 }
 
                 // Debug visualization for spikes
@@ -366,8 +363,7 @@ function checkObjectCollisions() {
 // === GAME STATE MANAGEMENT ===
 function onDeath() {
     gameState = 'dead';
-    deathTimer = 180;  // frames to show death screen
-    score = Math.floor(benchyConfig.x / 10);  // distance-based scoring
+    score = Math.max(Math.floor(benchyConfig.x / 10), 0); // distance-based scoring
     if (score > highScore) {
         highScore = score;
     }
@@ -381,7 +377,7 @@ function resetGame(isLightReset) {
     for (let i = 1; i < 4; i++) {
         addScene();
     }
-    
+
     // Reset player position and physics
     benchyConfig.x = 0;
     benchyConfig.y = 200;
@@ -389,7 +385,7 @@ function resetGame(isLightReset) {
     benchyConfig.velocityY = 0;
     benchyConfig.velocityX = 0;
     gameState = 'playing';
-    
+
     // Only reset level on full restart
     if (!isLightReset) {
         level = 1;
@@ -408,7 +404,7 @@ function drawScoreboard() {
     // Position relative to player but fixed on screen
     let screenX = benchyConfig.x - 20;
     let screenY = -200;
-    translate(0, 0, 10);  // bring forward a bit
+    translate(0, 0, 10); // bring forward a bit
 
     // Display current game stats
     text(`Score: ${score}`, screenX, screenY);
@@ -419,14 +415,14 @@ function drawScoreboard() {
 
 // === MAIN GAME LOOP ===
 function draw() {
-    background(163, 199, 255);  // nice sky blue
-    
+    background(163, 199, 255); // nice sky blue
+
     // Background rendering - performance mode uses static image
     if (!performanceMode) {
         for (const layer of parallaxLayers) {
             drawBackground(layer);
         }
-        let direction = createVector(0,50,-5)
+        let direction = createVector(0, 50, -5);
         directionalLight(255, 228, 156, direction);
     } else {
         push();
@@ -455,13 +451,13 @@ function draw() {
         // Level progression - reset at 9000 units
         if (benchyConfig.x > 9000) {
             level += 1;
-            freezeTimer = 180;  // brief pause
+            freezeTimer = 180; // brief pause
             resetGame(true);
         }
 
         // Collision detection
         checkObjectCollisions();
-        
+
         // Fall death check
         if (benchyConfig.y <= -1000) {
             onDeath();
@@ -469,15 +465,14 @@ function draw() {
 
         // Camera follows player with slight offset
         camera(benchyConfig.x + 200, 0, cameraConfig.z, benchyConfig.x + 200, 0, 0);
-        
+
         // Scene management and rendering
         manageScenes();
         drawScenes();
         drawPlayer();
         drawScoreboard();
-        
     } else if (gameState === 'dead') {
-        benchyConfig.x = 0;  // reset camera position
+        benchyConfig.x = 0; // reset camera position
         drawDeathScreen();
     }
 }
@@ -503,7 +498,7 @@ function manageScenes() {
     while (lastSceneX - benchyConfig.x < lastSceneWidth * 2) {
         addScene();
     }
-    
+
     // Update ground level based on current scene
     for (let scene of scenes) {
         if (benchyConfig.x >= scene.startX && benchyConfig.x < scene.startX + sceneWidth) {
@@ -514,8 +509,8 @@ function manageScenes() {
 
 function drawScenes() {
     noStroke();
-    fill(255, 200, 150);  // nice tan color for platforms
-    
+    fill(255, 200, 150); // nice tan color for platforms
+
     // Render all scene elements
     for (let scene of scenes) {
         // Draw platforms
@@ -525,35 +520,35 @@ function drawScenes() {
             box(platform.w || 0, platform.h || 10, platform.d || 100);
             pop();
         }
-        
+
         // Draw coins (if any)
         if (scene.coins) {
             for (let coin of scene.coins) {
                 push();
-                fill(255, 223, 0);  // gold color
+                fill(255, 223, 0); // gold color
                 translate(scene.startX + coin.x, -coin.y, 0);
                 sphere(10);
                 pop();
             }
         }
-        
+
         // Draw spikes (if any)
         if (scene.spikes) {
             for (let spike of scene.spikes) {
                 push();
-                fill(150, 0, 0);  // dark red
+                fill(150, 0, 0); // dark red
                 translate(scene.startX + spike.x, -spike.y - 20, 25);
                 rotateX(180);
                 cone(10, 20);
                 pop();
             }
         }
-        
+
         // Draw water hazards (if any)
         if (scene.water) {
             for (let water of scene.water) {
                 push();
-                fill(0, 100, 255, 150);  // semi-transparent blue
+                fill(0, 100, 255, 150); // semi-transparent blue
                 translate(scene.startX + water.x, -water.y, 0);
                 box(water.w, 5, 200);
                 pop();
@@ -568,14 +563,14 @@ function drawPlayer() {
     normalMaterial();
     translate(benchyConfig.x, -benchyConfig.y, -benchyConfig.z);
     rotateX(90);
-    
+
     // Flip model based on facing direction
     if (!faceForward) {
         translate(200, 200, 0);
         rotateY(180);
         rotateX(-180);
     }
-    
+
     model(benchy);
     pop();
 }
@@ -583,27 +578,26 @@ function drawPlayer() {
 // === DEATH SCREEN ===
 function drawDeathScreen() {
     camera(0, 0, cameraConfig.z, 0, 0, 0);
-    
+
     // Semi-transparent overlay
     fill(0, 0, 0, 180);
     rectMode(CENTER);
     rect(0, 0, width, height);
-    
+
     // Death message and stats
     fill(255);
     textAlign(CENTER, CENTER);
     textSize(36);
     text('YOU DIED', 0, 0);
-    
+
     textSize(20);
     text(`Score: ${score}`, 0, 40);
     text(`High Score: ${highScore}`, 0, 70);
     text(`Level: ${level}`, 0, 100);
-    
-    // Auto-restart after timer expires
-    if (--deathTimer <= 0) {
-        resetGame();
-    }
+
+    $('#dialog').get(0).classList.remove('opacity-0', 'pointer-events-none');
+    $('#scoreEnd').html(score);
+    $('#levelEnd').html(level);
 }
 
 // === BACKGROUND PARALLAX ===
@@ -618,13 +612,13 @@ function drawBackground(config) {
 
     push();
     translate(0, 0, -config.z);
-    
+
     // Draw repeating tiles
     for (let i = -(config.offsetTiles || 3); i < (config.tileCount || 7); i++) {
         let x = i * tileWidth - (worldX % tileWidth);
         push();
         translate(x, config.y, 0);
-        
+
         if (config.img) {
             texture(config.img);
             plane(tileWidth, tileHeight);
@@ -644,7 +638,7 @@ function drawDebug() {
     textFont(font);
     textSize(14);
     textAlign(RIGHT, TOP);
-    
+
     // Debug info lines
     let debugLines = [
         `x: ${benchyConfig.x.toFixed(1)}`,
@@ -660,7 +654,7 @@ function drawDebug() {
         `scenes: ${scenes.length}`,
         `fps: ${Math.max(0, Math.round(frameRate()))}`,
     ];
-    
+
     // Calculate debug box dimensions
     let margin = 8;
     let lineHeight = 18;
@@ -669,18 +663,18 @@ function drawDebug() {
     let boxHeight = debugLines.length * lineHeight + margin * 2;
     let boxX = width / 2 - margin - boxWidth;
     let boxY = -height / 2 + margin;
-    
+
     // Draw debug box background
     fill(0, 0, 255, 140);
     noStroke();
     rectMode(CORNER);
     rect(boxX, boxY, boxWidth, boxHeight, 6);
-    
+
     // Draw debug box border
     stroke(0, 200, 0, 200);
     noFill();
     rect(boxX, boxY, boxWidth, boxHeight, 6);
-    
+
     // Draw debug text
     fill(0, 255, 0);
     for (let i = 0; i < debugLines.length; i++) {
@@ -692,22 +686,63 @@ function drawDebug() {
 // === INPUT HANDLING ===
 function keyPressed() {
     // Map key codes to input state
-    if (keyCode === 32) spacePressed = true;    // Space
-    if (keyCode === 87) wPressed = true;        // W
-    if (keyCode === 65) aPressed = true;        // A
-    if (keyCode === 83) sPressed = true;        // S
-    if (keyCode === 68) dPressed = true;        // D
+    if (keyCode === 32) spacePressed = true; // Space
+    if (keyCode === 87) wPressed = true; // W
+    if (keyCode === 65) aPressed = true; // A
+    if (keyCode === 83) sPressed = true; // S
+    if (keyCode === 68) dPressed = true; // D
     if (keyCode === SHIFT) shiftPressed = true; // Shift
-    return false;                               // prevent default browser behavior
+    if (gameState !== 'dead') {
+        return false;
+    } // prevent default browser behavior
 }
 
 function keyReleased() {
     // Clear input state when keys are released
-    if (keyCode === 32) spacePressed = false;   // Space
-    if (keyCode === 87) wPressed = false;       // W
-    if (keyCode === 65) aPressed = false;       // A
-    if (keyCode === 83) sPressed = false;       // S
-    if (keyCode === 68) dPressed = false;       // D
-    if (keyCode === SHIFT) shiftPressed = false;// Shift
-    return false;                               // prevent default browser behavior
+    if (keyCode === 32) spacePressed = false; // Space
+    if (keyCode === 87) wPressed = false; // W
+    if (keyCode === 65) aPressed = false; // A
+    if (keyCode === 83) sPressed = false; // S
+    if (keyCode === 68) dPressed = false; // D
+    if (keyCode === SHIFT) shiftPressed = false; // Shift
+    if (gameState !== 'dead') {
+        return false;
+    } // prevent default browser behavior
+}
+
+function showScoreModal() {
+    let modal = $('#dialog').get(0);
+    modal.classList.remove('hidden');
+}
+
+function submitscore() {
+    $.ajax({
+        url: 'p5api.retreat896.com/addScore',
+        method: 'POST',
+        data: {
+            username: $('#usernameInput').val(),
+            highscore: highScore,
+            highlevel: level
+        },
+        
+        success: function (data) {
+            const scoresList = $('#scorelist');
+            scoresList.empty(); // Clear existing placeholder
+            let rank = 1;
+            data.scores.sort((a, b) => b.value - a.value);
+
+            data.forEach((scoreEntry, index) => {
+                const listItem = $(`
+                                <li class="flex items-center justify-center bg-gray-700/50 p-3 rounded-md transition-transform hover:scale-105 hover:bg-gray-700 flex-1 gap-4">
+                            <div class="flex items-center gap-1">
+                                <span class="font-bold text-yellow-400">${rank}</span>
+                                <span class="font-semibold">${scoreEntry.username.chatAt(0).toUpperCase() + scoreEntry.username.slice(1)}</span>
+                            </div>
+                            <span class="font-bold text-blue-400">Score: ${scoreEntry.highscore} - Level: ${scoreEntry.highlevel}</span>
+                        </li>`);
+                scoresList.append(listItem);
+                rank++;
+            });
+        },
+    });
 }

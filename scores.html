@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Ocean of Benchy</title>
+
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        <!-- p5.js Libraries -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/addons/p5.sound.min.js"></script>
+
+        <!-- Custom Game Scripts (assumed to be in the same folder) -->
+        <script src="scenesFile.js"></script>
+        <!-- <script src="sketch.js"></script> -->
+
+        <style>
+            /* Custom font and basic body styling */
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+            body {
+                font-family: 'Inter', sans-serif;
+            }
+        </style>
+    </head>
+
+    <body class="bg-gray-900 text-white antialiased">
+        <div id="nav" class="p-1 lg:p-2 bg-gray-800 shadow-md flex justify-start">
+            <h1 class="text-4xl font-extrabold text-blue-400">Ocean of Benchy</h1>
+            <a href="scores" class="self-center ml-auto text-gray-300 hover:text-white px-3 py-1 rounded-md transition-colors duration-200">View High Scores</a>
+        </div>
+
+        <div class="flex flex-col lg:flex-row min-h-screen w-full p-4 lg:p-8 gap-8">
+            <!-- Center: Game Canvas Container -->
+            <main class="flex flex-col items-center justify-center flex flex-1">
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6 h-full w-full flex flex-col items-center">
+                    <h2 class="text-2xl font-bold text-center border-b border-gray-700 pb-3 mb-4">
+                        <span class="text-yellow-400">🏆</span>
+                        High Scores
+                    </h2>
+                    <ul class="space-y-3 flex flex-1 flex-col w-full align-center text-center" id="scorelist">
+                        <!-- Fake High Score Entries -->
+                        
+                    </ul>
+                </div>
+            </main>
+        </div>
+        <script>
+            $(document).ready(function () {
+                // Fetch high scores from the server
+                $.ajax({
+                    url: 'p5api.retreat896.com/scores',
+                    method: 'GET',
+                    success: function (data) {
+                        const scoresList = $('#scorelist');
+                        scoresList.empty(); // Clear existing placeholder
+                        let rank = 1;
+                        data.scores.sort((a,b) => b.value - a.value); 
+
+                        data.forEach((scoreEntry, index) => {
+                            const listItem = $(`
+                                <li class="flex items-center justify-center bg-gray-700/50 p-3 rounded-md transition-transform hover:scale-105 hover:bg-gray-700 flex-1 gap-4">
+                            <div class="flex items-center gap-1">
+                                <span class="font-bold text-yellow-400">${rank}</span>
+                                <span class="font-semibold">${scoreEntry.username.chatAt(0).toUpperCase()+ scoreEntry.username.slice(1)}</span>
+                            </div>
+                            <span class="font-bold text-blue-400">Score: ${scoreEntry.highscore} - Level: ${scoreEntry.highlevel}</span>
+                        </li>`);
+                            scoresList.append(listItem);
+                            rank++;
+                        });
+                    },
+                });
+            });
+        </script>
+    </body>
+</html>

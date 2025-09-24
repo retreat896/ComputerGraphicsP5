@@ -12,6 +12,9 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/addons/p5.sound.min.js"></script>
 
+        <!-- jquery -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
         <!-- Custom Game Scripts (assumed to be in the same folder) -->
         <script src="scenesFile.js"></script>
         <!-- <script src="sketch.js"></script> -->
@@ -25,15 +28,13 @@
         </style>
     </head>
 
-    <body class="bg-gray-900 text-white antialiased">
+    <body class="bg-gray-900 text-white antialiased lg:overflow-hidden h-full">
         <div id="nav" class="p-1 lg:p-2 bg-gray-800 shadow-md flex justify-start">
             <h1 class="text-4xl font-extrabold text-blue-400">Ocean of Benchy</h1>
-            <a href="scores" 
-            class="self-center ml-auto text-gray-300 hover:text-white px-3 py-1 rounded-md 
-            transition-colors duration-200">View High Scores</a>
+            <a href="scores" class="self-center ml-auto text-gray-300 hover:text-white px-3 py-1 rounded-md transition-colors duration-200">View High Scores</a>
         </div>
 
-        <div class="flex flex-col lg:flex-row min-h-screen w-full p-4 lg:p-8 gap-8">
+        <div class="flex flex-col lg:flex-row w-full p-4 lg:p-8 gap-8">
             <!-- Left Spacer (Hidden on screens smaller than lg) -->
             <div class="hidden lg:block lg:flex-1"></div>
 
@@ -43,58 +44,93 @@
 
                 <!-- We'll give it an ID to make it easy to target -->
                 <div id="game-canvas-container" class="bg-black rounded-lg shadow-2xl shadow-blue-500/20 overflow-hidden" style="width: 800px; height: 600px">
-                    <!-- <script src="sketch.js"></script> -->
+                    <script src="sketch.js"></script>
                 </div>
                 <p class="mt-4 text-gray-400">Controls: [A] / [D] to Move, [Space] to Jump, [Shift] to Sprint</p>
             </main>
 
             <!-- Right: High Score Board -->
-            <aside class="w-full lg:w-72 xl:w-80 flex-shrink-0">
+            <aside class="w-full lg:w-90 xl:w-90 flex-1 overflow-y-auto">
                 <div class="bg-gray-800 rounded-lg shadow-lg p-6 h-full">
                     <h2 class="text-2xl font-bold text-center border-b border-gray-700 pb-3 mb-4">
                         <span class="text-yellow-400">🏆</span>
                         High Scores
                     </h2>
-                    <ul class="space-y-3">
-                        <!-- Fake High Score Entries -->
-                        <li class="flex items-center justify-between bg-gray-700/50 p-3 rounded-md transition-transform hover:scale-105 hover:bg-gray-700">
-                            <div class="flex items-center gap-3">
-                                <span class="font-bold text-yellow-400">1.</span>
-                                <span class="font-semibold">Capt. Ahab</span>
+                    <ul class="space-y-3" id="scorelist"></ul>
+                    <script>
+                        $(document).ready(function () {
+                            // Fetch high scores from the server
+                            $.ajax({
+                                url: 'p5api.retreat896.com/scores',
+                                method: 'GET',
+                                success: function (data) {
+                                    const scoresList = $('#scorelist');
+                                    scoresList.empty(); // Clear existing placeholder
+                                    let rank = 1;
+                                    data.scores.sort((a, b) => b.value - a.value);
+
+                                    data.forEach((scoreEntry, index) => {
+                                        const listItem = $(`
+                                <li class="flex items-center justify-center bg-gray-700/50 p-3 rounded-md transition-transform hover:scale-105 hover:bg-gray-700 flex-1 gap-4">
+                            <div class="flex items-center gap-1">
+                                <span class="font-bold text-yellow-400">${rank}</span>
+                                <span class="font-semibold">${scoreEntry.username.chatAt(0).toUpperCase() + scoreEntry.username.slice(1)}</span>
                             </div>
-                            <span class="font-bold text-blue-400">98,450</span>
-                        </li>
-                        <li class="flex items-center justify-between bg-gray-700/50 p-3 rounded-md transition-transform hover:scale-105 hover:bg-gray-700">
-                            <div class="flex items-center gap-3">
-                                <span class="font-bold text-gray-400">2.</span>
-                                <span class="font-semibold">Blackbeard</span>
-                            </div>
-                            <span class="font-bold text-blue-400">85,200</span>
-                        </li>
-                        <li class="flex items-center justify-between bg-gray-700/50 p-3 rounded-md transition-transform hover:scale-105 hover:bg-gray-700">
-                            <div class="flex items-center gap-3">
-                                <span class="font-bold text-yellow-600">3.</span>
-                                <span class="font-semibold">Davy Jones</span>
-                            </div>
-                            <span class="font-bold text-blue-400">76,110</span>
-                        </li>
-                        <li class="flex items-center justify-between bg-gray-700/50 p-3 rounded-md transition-transform hover:scale-105 hover:bg-gray-700">
-                            <div class="flex items-center gap-3">
-                                <span class="font-bold text-gray-500">4.</span>
-                                <span class="font-semibold">Sea Serpent</span>
-                            </div>
-                            <span class="font-bold text-blue-400">62,980</span>
-                        </li>
-                        <li class="flex items-center justify-between bg-gray-700/50 p-3 rounded-md transition-transform hover:scale-105 hover:bg-gray-700">
-                            <div class="flex items-center gap-3">
-                                <span class="font-bold text-gray-500">5.</span>
-                                <span class="font-semibold">The Kraken</span>
-                            </div>
-                            <span class="font-bold text-blue-400">55,300</span>
-                        </li>
-                    </ul>
+                            <span class="font-bold text-blue-400">Score: ${scoreEntry.highscore} - Level: ${scoreEntry.highlevel}</span>
+                        </li>`);
+                                        scoresList.append(listItem);
+                                        rank++;
+                                    });
+                                },
+                            });
+                        });
+                    </script>
                 </div>
             </aside>
+        </div>
+        <div id="dialog" data-dialog-backdrop="modal" data-dialog-backdrop-close="true" class="pointer-events-none fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black bg-opacity-60 opacity-0 backdrop-blur-sm transition-opacity duration-300">
+            <div data-dialog="modal" class="relative m-4 p-4 w-2/5 min-w-[40%] max-w-[40%] rounded-lg bg-gray-900 text-white shadow-sm">
+                <div class="flex shrink-0 items-center pb-4 text-xl font-medium text-slate-200">
+                    Score: &nbsp;
+                    <span id="scoreEnd" class="items-center text-green-900"></span>
+                    &nbsp; Level: &nbsp;
+                    <span id="levelEnd" class="items-center text-green-900"></span>
+                </div>
+                <div class="relative border-t border-slate-200 py-4 leading-normal text-slate-100 font-light">
+                    Upload your score to the leaderboard?
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Enter Your Name/Username"
+                        class="mt-2 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm shadow-sm placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                        minlength="3"
+                        maxlength="15"
+                        oninput="if(this.value.length >= 3){
+                        $('#submitScore').prop('disabled',false);
+                    } else {
+                        $('#submitScore').prop('disabled',true);
+                    }" />
+                </div>
+                <div class="flex shrink-0 flex-wrap items-center pt-4 justify-end">
+                    <button
+                        data-dialog-close="true"
+                        class="rounded-md border bg-red-600 border-transparent py-2 px-4 text-center text-sm text-white transition-all shadow-md hover:bg-red-700 focus:bg-red-700 active:bg-red-700 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                        type="button"
+                        onclick="resetGame(); $('#dialog').addClass('opacity-0 pointer-events-none')">
+                        No
+                    </button>
+                    <button
+                        id="submitScore"
+                        data-dialog-close="true"
+                        class="rounded-md bg-green-600 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-green-700 focus:shadow-none active:bg-green-700 hover:bg-green-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none ml-2"
+                        type="button"
+                        onclick="resetGame(); submitscore();"
+                        disabled>
+                        Yes
+                    </button>
+                </div>
+            </div>
         </div>
     </body>
 </html>
