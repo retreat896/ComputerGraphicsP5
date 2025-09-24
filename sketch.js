@@ -1,4 +1,3 @@
-
 let benchy;
 let font;
 const DEBUG_MODE = true; // set to false to remove hitboxes
@@ -719,16 +718,16 @@ function submitscore() {
     $.ajax({
         url: 'https://p5api.retreat896.com/addScore',
         method: 'POST',
-        contentType: "application/json",   // sending JSON
-        dataType: "json",                  // expecting JSON back
+        contentType: 'application/json', // important
+        dataType: 'json', // expecting JSON back
         data: JSON.stringify({
-            username: $('#usernameInput').val(),
-            highscore: highScore,
-            highlevel: level
+            username: $('#username').val(),
+            highscore: Number(highScore), // ensure number
+            highlevel: Number(level), // ensure number
         }),
         success: function (data) {
             const scoresList = $('#scorelist');
-            scoresList.empty(); 
+            scoresList.empty();
             let rank = 1;
 
             // sort by highscore
@@ -752,8 +751,7 @@ function submitscore() {
             });
         },
         error: function (xhr, status, error) {
-            console.error("Error submitting score:", error, xhr.responseText);
-        }
+            console.error('Error submitting score:', error, xhr.responseText);
+        },
     });
 }
-

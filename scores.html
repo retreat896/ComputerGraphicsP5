@@ -41,28 +41,27 @@
                     </h2>
                     <ul class="space-y-3 flex flex-1 flex-col w-full align-center text-center" id="scorelist">
                         <!-- Fake High Score Entries -->
-                        
                     </ul>
                 </div>
             </main>
         </div>
         <script>
             $(document).ready(function () {
-    // Fetch high scores from the server
-    $.ajax({
-        url: 'https://p5api.retreat896.com/scores',
-        method: 'GET',
-        dataType: "json", // expect JSON back
-        success: function (data) {
-            const scoresList = $('#scorelist');
-            scoresList.empty(); 
-            let rank = 1;
+                // Fetch high scores from the server
+                $.ajax({
+                    url: 'https://p5api.retreat896.com/scores',
+                    method: 'GET',
+                    dataType: 'json', // expect JSON back
+                    success: function (data) {
+                        const scoresList = $('#scorelist');
+                        scoresList.empty();
+                        let rank = 1;
 
-            // sort by highscore
-            data.scores.sort((a, b) => b.highscore - a.highscore);
+                        // sort by highscore
+                        data.scores.sort((a, b) => b.highscore - a.highscore);
 
-            data.scores.forEach((scoreEntry) => {
-                const listItem = $(`
+                        data.scores.forEach((scoreEntry) => {
+                            const listItem = $(`
                     <li class="flex items-center justify-center bg-gray-700/50 p-3 rounded-md transition-transform hover:scale-105 hover:bg-gray-700 flex-1 gap-4">
                         <div class="flex items-center gap-1">
                             <span class="font-bold text-yellow-400">${rank}</span>
@@ -74,16 +73,15 @@
                             Score: ${scoreEntry.highscore} - Level: ${scoreEntry.highlevel}
                         </span>
                     </li>`);
-                scoresList.append(listItem);
-                rank++;
+                            scoresList.append(listItem);
+                            rank++;
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error fetching scores:', error, xhr.responseText);
+                    },
+                });
             });
-        },
-        error: function (xhr, status, error) {
-            console.error("Error fetching scores:", error, xhr.responseText);
-        }
-    });
-});
-
         </script>
     </body>
 </html>
