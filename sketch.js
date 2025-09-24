@@ -719,30 +719,41 @@ function submitscore() {
     $.ajax({
         url: 'https://p5api.retreat896.com/addScore',
         method: 'POST',
-        data: {
+        contentType: "application/json",   // sending JSON
+        dataType: "json",                  // expecting JSON back
+        data: JSON.stringify({
             username: $('#usernameInput').val(),
             highscore: highScore,
             highlevel: level
-        },
-        
+        }),
         success: function (data) {
             const scoresList = $('#scorelist');
-            scoresList.empty(); // Clear existing placeholder
+            scoresList.empty(); 
             let rank = 1;
-            data.scores.sort((a, b) => b.value - a.value);
 
-            data.forEach((scoreEntry, index) => {
+            // sort by highscore
+            data.scores.sort((a, b) => b.highscore - a.highscore);
+
+            data.scores.forEach((scoreEntry) => {
                 const listItem = $(`
-                                <li class="flex items-center justify-center bg-gray-700/50 p-3 rounded-md transition-transform hover:scale-105 hover:bg-gray-700 flex-1 gap-4">
-                            <div class="flex items-center gap-1">
-                                <span class="font-bold text-yellow-400">${rank}</span>
-                                <span class="font-semibold">${scoreEntry.username.chatAt(0).toUpperCase() + scoreEntry.username.slice(1)}</span>
-                            </div>
-                            <span class="font-bold text-blue-400">Score: ${scoreEntry.highscore} - Level: ${scoreEntry.highlevel}</span>
-                        </li>`);
+                    <li class="flex items-center justify-center bg-gray-700/50 p-3 rounded-md transition-transform hover:scale-105 hover:bg-gray-700 flex-1 gap-4">
+                        <div class="flex items-center gap-1">
+                            <span class="font-bold text-yellow-400">${rank}</span>
+                            <span class="font-semibold">
+                                ${scoreEntry.username.charAt(0).toUpperCase() + scoreEntry.username.slice(1)}
+                            </span>
+                        </div>
+                        <span class="font-bold text-blue-400">
+                            Score: ${scoreEntry.highscore} - Level: ${scoreEntry.highlevel}
+                        </span>
+                    </li>`);
                 scoresList.append(listItem);
                 rank++;
             });
         },
+        error: function (xhr, status, error) {
+            console.error("Error submitting score:", error, xhr.responseText);
+        }
     });
 }
+
