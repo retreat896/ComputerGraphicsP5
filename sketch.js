@@ -1,8 +1,9 @@
-let benchy;
-let font;
 let DEBUG_MODE = false; // set to false to remove hitboxes
 let performanceMode = false;
 let performanceBackground;
+(()=>{let benchy;
+let font;
+
 
 // === INPUT HANDLING ===
 let spacePressed = false;
@@ -74,7 +75,7 @@ let sceneTemplates = scenesFile;
 let parallaxLayers; // will be populated in preload()
 
 // === ASSET LOADING ===
-function preload() {
+window.preload = ()=> {
     // Loading all our assets
     performanceBackground = loadImage('./water/6.png');
     benchy = loadModel('./LowPoly3DBenchy.obj'); // our main character!
@@ -95,7 +96,7 @@ function preload() {
 }
 
 // === INITIALIZATION ===
-function setup() {
+window.setup= () => {
     let canvas = createCanvas(800, 600, WEBGL);
     canvas.parent('game-canvas-container');
     angleMode(DEGREES); // I find degrees easier to work with than radians
@@ -369,7 +370,7 @@ function onDeath() {
     }
 }
 
-function resetGame(isLightReset) {
+window.resetGame = (isLightReset) => {
     // Clear and regenerate scenes
     scenes = [];
     lastSceneX = 0;
@@ -430,7 +431,7 @@ function drawLevelChange() {
 }
 
 // === MAIN GAME LOOP ===
-function draw() {
+window.draw = () =>{
     background(163, 199, 255); // nice sky blue
 
     // Background rendering - performance mode uses static image
@@ -704,7 +705,7 @@ function drawDebug() {
 }
 
 // === INPUT HANDLING ===
-function keyPressed() {
+window.keyPressed =()=> {
     // Map key codes to input state
     if (keyCode === 32) spacePressed = true; // Space
     if (keyCode === 87) wPressed = true; // W
@@ -717,7 +718,7 @@ function keyPressed() {
     } // prevent default browser behavior
 }
 
-function keyReleased() {
+window.keyReleased = () =>{
     // Clear input state when keys are released
     if (keyCode === 32) spacePressed = false; // Space
     if (keyCode === 87) wPressed = false; // W
@@ -730,12 +731,12 @@ function keyReleased() {
     } // prevent default browser behavior
 }
 
-function showScoreModal() {
+window.showScoreModal = () =>{
     let modal = $('#dialog').get(0);
     modal.classList.remove('hidden');
 }
 
-function submitscore() {
+window.submitscore = ()=> {
     $.ajax({
         url: 'https://p5api.retreat896.com/addScore',
         method: 'POST',
@@ -776,3 +777,4 @@ function submitscore() {
         },
     });
 }
+})();
