@@ -62,8 +62,8 @@ let scenesFile = [
 
     // Template 5: "Bridge Over The Pit" - A narrow path forcing a precise jump.
     {
-        ground: -200, 
         platforms: [
+            
             {x: 0, y: -100, w: 300, h: 20 },
             { x: 500, y: 0, w: 300, h: 20 }, 
             // Safety floor below the pit
@@ -77,8 +77,8 @@ let scenesFile = [
     
     // Template 6: "Pillar Gauntlet" - A test of jumping precision.
     {
-        ground: -150, 
         platforms: [
+            {x:0, y:-100,w:80,h:20},
             { x: 100, y: -50, w: 80, h: 20 },
             { x: 300, y: 0, w: 80, h: 20 }, 
             { x: 500, y: 0, w: 80, h: 20 }, 
