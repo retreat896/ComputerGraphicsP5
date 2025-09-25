@@ -1,6 +1,6 @@
 let benchy;
 let font;
-const DEBUG_MODE = true; // set to false to remove hitboxes
+let DEBUG_MODE = false; // set to false to remove hitboxes
 let performanceMode = false;
 let performanceBackground;
 
@@ -82,14 +82,15 @@ function preload() {
 
     // Parallax background layers - these create nice depth
     parallaxLayers = [
-        { y: 140, z: 15, speed: 0.1, img: loadImage('water/1.png'), tileCount: 20, offsetTiles: 3 },
-        { y: 170, z: 12, speed: 0.25, img: loadImage('water/5.png'), tileCount: 20, offsetTiles: 3 },
-        { y: 145, z: 13, speed: 0.3, img: loadImage('water/4.png'), tileCount: 20, offsetTiles: 3 },
+
+         { y: -100, z: 45, speed: 0.11, img: loadImage('water/5.png'), tileCount: 20, offsetTiles: 3 },
+         { y: 145, z: 50, speed: 0.12, img: loadImage('water/4.png'), tileCount: 20, offsetTiles: 3 },
         // { y: -100, z: 15, speed: 0.35, img: loadImage('./clouds/1.png'), tileCount: 20, offsetTiles: 3 },  // disabled for now
-        { y: -100, z: 14, speed: 0.4, img: loadImage('./clouds/2.png'), tileCount: 20, offsetTiles: 3 },
-        { y: -100, z: 13, speed: 0.45, img: loadImage('./clouds/3.png'), tileCount: 20, offsetTiles: 3 },
-        // { y: -100, z: 12, speed: 0.5, img: loadImage('./clouds/4.png'), tileCount: 20, offsetTiles: 3 },  // too many clouds
-        { y: 500, z: 12, speed: 0.5, img: loadImage('./water/2.png'), tileCount: 20, offsetTiles: 3 },
+         { y: -100, z: 14, speed: 0.13, img: loadImage('./clouds/2.png'), tileCount: 20, offsetTiles: 3 },
+         { y: -100, z: 13, speed: 0.14, img: loadImage('./clouds/3.png'), tileCount: 20, offsetTiles: 3 },
+        { y: -60, z: 0, speed: 0.15, img: loadImage('./clouds/4.png'), tileCount: 20, offsetTiles: 3 },  // too many clouds
+        { y: 60, z: 15, speed: 0, img: loadImage('water/1.png'), tileCount: 20, offsetTiles: 3 }, // Bottom Sand with water
+        { y: 210, z: 15, speed: 0, img: loadImage('./water/2.png'), tileCount: 20, offsetTiles: 3 }, //sandy mountain thing
     ];
 }
 
@@ -362,7 +363,7 @@ function checkObjectCollisions() {
 // === GAME STATE MANAGEMENT ===
 function onDeath() {
     gameState = 'dead';
-    score = Math.max(Math.floor(benchyConfig.x / 10), 0); // distance-based scoring
+    score += level*100; // level based score
     if (score > highScore) {
         highScore = score;
     }
@@ -387,6 +388,7 @@ function resetGame(isLightReset) {
 
     // Only reset level on full restart
     if (!isLightReset) {
+        score = 0;
         level = 1;
     }
 }
@@ -410,6 +412,21 @@ function drawScoreboard() {
     text(`High: ${highScore}`, screenX, screenY + 28);
     text(`Level: ${level}`, screenX, screenY + 56);
     pop();
+}
+
+function drawLevelChange() {
+   camera(0, 0, cameraConfig.z, 0, 0, 0);
+
+    // Semi-transparent overlay
+    fill(0, 0, 0, 180);
+    rectMode(CENTER);
+    rect(0, 0, width, height);
+
+    // Death message and stats
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(36);
+    text(`Level ${level}`, 0, 0);
 }
 
 // === MAIN GAME LOOP ===
@@ -445,6 +462,9 @@ function draw() {
             handleJump();
             handleSprint();
             handleMovement();
+
+        }else{
+            drawLevelChange();
         }
 
         // Level progression - reset at 9000 units
@@ -515,6 +535,7 @@ function drawScenes() {
         // Draw platforms
         for (let platform of scene.platforms) {
             push();
+            rectMode(CENTER);
             translate(scene.startX + platform.x, -platform.y, 0);
             box(platform.w || 0, platform.h || 10, platform.d || 100);
             pop();
@@ -721,7 +742,7 @@ function submitscore() {
         contentType: 'application/json', // important
         dataType: 'json', // expecting JSON back
         data: JSON.stringify({
-            username: $('#username').val(),
+            username: String($('#username').val()),
             highscore: Number(highScore), // ensure number
             highlevel: Number(level), // ensure number
         }),

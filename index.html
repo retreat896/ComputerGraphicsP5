@@ -28,15 +28,35 @@
         </style>
     </head>
 
-    <body class="bg-gray-900 text-white antialiased lg:overflow-hidden h-full">
-        <div id="nav" class="p-1 lg:p-2 bg-gray-800 shadow-md flex justify-start">
-            <h1 class="text-4xl font-extrabold text-blue-400">Ocean of Benchy</h1>
-            <a href="scores" class="self-center ml-auto text-gray-300 hover:text-white px-3 py-1 rounded-md transition-colors duration-200">View High Scores</a>
+    <body class="bg-gray-900 text-white antialiased h-full">
+        <div id="nav" class="fixed top-0 left-0 right-0 z-50 bg-gray-800 shadow-md">
+            <div class="flex items-center justify-between px-4 py-2">
+                <!-- Brand -->
+                <h1 class="text-xl lg:text-2xl font-extrabold text-blue-400">Ocean of Benchy</h1>
+
+                <!-- Right Link -->
+                <a href="scores" class="text-gray-300 hover:text-white px-3 py-1 rounded-md transition-colors duration-200">View High Scores</a>
+            </div>
         </div>
 
-        <div class="flex flex-col lg:flex-row w-full p-4 lg:p-8 gap-8">
+        <div class="flex flex-col lg:flex-row w-full p-4 lg:p-8 gap-8 mt-12">
             <!-- Left Spacer (Hidden on screens smaller than lg) -->
-            <div class="hidden lg:block lg:flex-1"></div>
+            <div class="lg:block lg:flex-1">
+                <p class="mt-12 text-gray-400">Controls: [A] / [D] to Move, [Space] to Jump, [Shift] to Sprint</p>
+                <div>
+                    <!-- Debug Toggle Checkbox -->
+                    <label class="inline-flex items-center mt-4">
+                        <input type="checkbox" id="debugToggleCheckbox" class="form-checkbox h-5 w-5 text-blue-600" onchange="DEBUG_MODE = this.checked;" />
+                        <span class="ml-2 text-gray-300">Debug Mode (Show Hitboxes)</span>
+                    </label>
+
+                    <!-- Performance Mode Checkbox -->
+                    <label class="inline-flex items-center mt-4">
+                        <input type="checkbox" id="performanceModeCheckbox" class="form-checkbox h-5 w-5 text-blue-600" onchange="performanceMode = this.checked; if(performanceMode){ loop(); }" />
+                        <span class="ml-2 text-gray-300">Performance Mode (Disables Background)</span>
+                    </label>
+                </div>
+            </div>
 
             <!-- Center: Game Canvas Container -->
             <main class="flex flex-col items-center justify-center">
@@ -46,11 +66,10 @@
                 <div id="game-canvas-container" class="bg-black rounded-lg shadow-2xl shadow-blue-500/20 overflow-hidden" style="width: 800px; height: 600px">
                     <script src="sketch.js"></script>
                 </div>
-                <p class="mt-4 text-gray-400">Controls: [A] / [D] to Move, [Space] to Jump, [Shift] to Sprint</p>
             </main>
 
             <!-- Right: High Score Board -->
-            <aside class="w-full lg:w-90 xl:w-90 flex-1 overflow-y-auto">
+            <aside class="mt-12 w-full lg:w-90 xl:w-90 flex-1 overflow-y-auto">
                 <div class="bg-gray-800 rounded-lg shadow-lg p-6 h-full">
                     <h2 class="text-2xl font-bold text-center border-b border-gray-700 pb-3 mb-4">
                         <span class="text-yellow-400">🏆</span>
