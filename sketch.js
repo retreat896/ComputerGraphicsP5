@@ -7,9 +7,8 @@ let performanceBackground;
     let uuid;
     if (localStorage.getItem('uuid')) {
         uuid = localStorage.getItem('uuid');
-    }else{
+    } else {
         uuid = crypto.randomUUID();
-
     }
 
     // === INPUT HANDLING ===
@@ -718,6 +717,10 @@ let performanceBackground;
         if (keyCode === 83) sPressed = true; // S
         if (keyCode === 68) dPressed = true; // D
         if (keyCode === SHIFT) shiftPressed = true; // Shift
+        if (keyCode === UP_ARROW) wPressed = true;
+        if (keyCode === LEFT_ARROW) aPressed = true;
+        if (keyCode === DOWN_ARROW) sPressed = true;
+        if (keyCode === RIGHT_ARROW) dPressed = true;
         if (gameState !== 'dead') {
             return false;
         } // prevent default browser behavior
@@ -731,6 +734,10 @@ let performanceBackground;
         if (keyCode === 83) sPressed = false; // S
         if (keyCode === 68) dPressed = false; // D
         if (keyCode === SHIFT) shiftPressed = false; // Shift
+        if (keyCode === UP_ARROW) wPressed = false;
+        if (keyCode === LEFT_ARROW) aPressed = false;
+        if (keyCode === DOWN_ARROW) sPressed = false;
+        if (keyCode === RIGHT_ARROW) dPressed = false;
         if (gameState !== 'dead') {
             return false;
         } // prevent default browser behavior
