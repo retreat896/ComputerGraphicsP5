@@ -9,6 +9,7 @@ let performanceBackground;
         uuid = localStorage.getItem('uuid');
     } else {
         uuid = crypto.randomUUID();
+        localStorage.setItem("uuid");
     }
 
     // === INPUT HANDLING ===

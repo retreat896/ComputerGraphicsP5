@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": "../ComputerGraphicsp5API"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"wrangler.json": "jsonc"
+		}
+	}
+}
