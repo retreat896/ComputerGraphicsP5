@@ -27,6 +27,7 @@ let performanceBackground;
     let highScore = 0;
     let freezeTimer = 0; // for "level" transitions
     let level = 1;
+    let highlevel = 1;
 
     // === PLAYER SETTINGS ===
     let benchyConfig = {
@@ -374,6 +375,7 @@ let performanceBackground;
         if (score > highScore) {
             highScore = score;
         }
+        highlevel = level;
     }
 
     window.resetGame = (isLightReset) => {
@@ -758,7 +760,7 @@ let performanceBackground;
             data: JSON.stringify({
                 username: String($('#username').val()),
                 highscore: Number(highScore), // ensure number
-                highlevel: Number(level), // ensure number
+                highlevel: Number(highlevel), // ensure number
                 uuid: String(uuid),
             }),
             success: function (data) {
