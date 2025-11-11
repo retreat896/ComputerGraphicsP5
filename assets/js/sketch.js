@@ -2,6 +2,11 @@ let DEBUG_MODE = false; // set to false to remove hitboxes
 let performanceMode = false;
 let performanceBackground;
 
+let coinShader;
+let backgroundShader;
+
+// Shader variables (will be loaded from files)
+let vert, frag, bgVert, bgFrag;
 (() => {
     // === GLOBALS ===
     let benchy;
@@ -92,23 +97,31 @@ let performanceBackground;
         benchy = loadModel('/assets/LowPoly3DBenchy.obj');
         font = loadFont('/assets/font.ttf');
         coinImage = loadImage('/assets/coin-gold.svg');
+        
+        // Load shaders
+        vert = loadStrings('/assets/shaders/coin.vert');
+        frag = loadStrings('/assets/shaders/coin.frag');
+        bgVert = loadStrings('/assets/shaders/background.vert');
+        bgFrag = loadStrings('/assets/shaders/background.frag');
 
         // Parallax background layers
         parallaxLayers = [
-            { y: -100, z: 45, speed: 0.11, img: loadImage('/assets/water/5.png'), tileCount: 20, offsetTiles: 3 },
-            { y: 145, z: 50, speed: 0.12, img: loadImage('/assets/water/4.png'), tileCount: 20, offsetTiles: 3 },
+            { y: -100, z: 45, speed: 0.11, img: loadImage('/assets/water/5.png'), tileCount: 20, offsetTiles: 3, isCloud: true },
+            { y: 145, z: 50, speed: 0.12, img: loadImage('/assets/water/4.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
             // { y: -100, z: 15, speed: 0.35, img: loadImage('./clouds/1.png'), tileCount: 20, offsetTiles: 3 },  // disabled for now
-            { y: -100, z: 14, speed: 0.13, img: loadImage('/assets/clouds/2.png'), tileCount: 20, offsetTiles: 3 },
-            { y: -100, z: 13, speed: 0.14, img: loadImage('/assets/clouds/3.png'), tileCount: 20, offsetTiles: 3 },
-            { y: -60, z: 0, speed: 0.15, img: loadImage('/assets/clouds/4.png'), tileCount: 20, offsetTiles: 3 }, // too many clouds
-            { y: 60, z: 15, speed: 0, img: loadImage('/assets/water/1.png'), tileCount: 20, offsetTiles: 3 }, // Bottom Sand with water
-            { y: 210, z: 15, speed: 0, img: loadImage('/assets/water/2.png'), tileCount: 20, offsetTiles: 3 }, //sandy mountain thing
+            { y: -100, z: 14, speed: 0.13, img: loadImage('/assets/clouds/2.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
+            { y: -100, z: 13, speed: 0.14, img: loadImage('/assets/clouds/3.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
+            { y: -60, z: 0, speed: 0.15, img: loadImage('/assets/clouds/4.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
+            { y: 60, z: 15, speed: 0, img: loadImage('/assets/water/1.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
+            { y: 210, z: 15, speed: 0, img: loadImage('/assets/water/2.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
         ];
     };
 
     // === INITIALIZATION ===
     window.setup = () => {
         let canvas = createCanvas(800, 600, WEBGL);
+        coinShader = createShader(vert.join('\n'), frag.join('\n'));
+        backgroundShader = createShader(bgVert.join('\n'), bgFrag.join('\n'));
         canvas.parent('game-canvas-container');
         angleMode(DEGREES);
         textFont(font);
@@ -120,7 +133,7 @@ let performanceBackground;
         }
     };
 
-    // === PHYSICS AND HELPERS ===  
+    // === PHYSICS AND HELPERS ===
     function getPlayerHitbox() {
         // Calculate the player's collision box
         const halfW = 5 + hitboxOffsets.w;
@@ -517,6 +530,7 @@ let performanceBackground;
     }
 
     function drawScenes() {
+        push();
         noStroke();
         fill(255, 200, 150); // nice tan color for platforms
 
@@ -531,14 +545,17 @@ let performanceBackground;
                 pop();
             }
 
-            // Draw coins (if any) using an svg instead of 3d obj
+            // Draw coins (if any) with coin shader applied
             if (scene.coins) {
-                let coinOffset = { x: 16, y: 17 };
                 for (let coin of scene.coins) {
                     push();
-                    translate(scene.startX + coin.x - coinOffset.x, -coin.y - coinOffset.y, 0);
-                    image(coinImage, 0, 0, 35, 35);
-
+                    shader(coinShader);
+                    coinShader.setUniform('uTexture', coinImage);
+                    coinShader.setUniform('time', millis());
+                    texture(coinImage);
+                    translate(scene.startX + coin.x, -coin.y, 0);
+                    
+                    plane(35, 35);
                     pop();
                 }
             }
@@ -566,16 +583,21 @@ let performanceBackground;
                 }
             }
         }
+        pop();
     }
 
     // === PLAYER RENDERING ===
     function drawPlayer() {
         push();
+
         normalMaterial();
+
         translate(benchyConfig.x, -benchyConfig.y, -benchyConfig.z);
+
         rotateX(90);
 
         // Flip model based on facing direction
+
         if (!faceForward) {
             translate(200, 200, 0);
             rotateY(180);
@@ -622,6 +644,14 @@ let performanceBackground;
         let worldX = benchyConfig.x * parallaxSpeed;
 
         push();
+        noStroke();
+
+        // Apply wave shader only to clouds
+        if (config.isCloud) {
+            shader(backgroundShader);
+            backgroundShader.setUniform('time', millis());
+        }
+
         translate(0, 0, -config.z);
 
         // Draw repeating tiles
@@ -631,6 +661,9 @@ let performanceBackground;
             translate(x, config.y, 0);
 
             if (config.img) {
+                if (config.isCloud) {
+                    backgroundShader.setUniform('uTexture', config.img);
+                }
                 texture(config.img);
                 plane(tileWidth, tileHeight);
             } else {
