@@ -1,15 +1,18 @@
 let DEBUG_MODE = false; // set to false to remove hitboxes
 let performanceMode = false;
 let performanceBackground;
+
 (() => {
+    // === GLOBALS ===
     let benchy;
     let font;
+    let coinImage;
     let uuid;
     if (localStorage.getItem('uuid')) {
         uuid = localStorage.getItem('uuid');
     } else {
         uuid = crypto.randomUUID();
-        localStorage.setItem("uuid",uuid);
+        localStorage.setItem('uuid', uuid);
     }
 
     // === INPUT HANDLING ===
@@ -47,7 +50,7 @@ let performanceBackground;
         ga: 0.2, // ground acceleration - higher = snappier movement
     };
 
-    // Hitbox adjustments
+    // === PLAYER+ HITBOX OFFSET ===
     let hitboxOffsets = {
         x: 100,
         y: 30,
@@ -68,7 +71,7 @@ let performanceBackground;
     let lastSceneWidth = sceneWidth;
     let lastSceneX = 0;
 
-    // Basic starting scene - nothing fancy
+    // Basic starting scene
     let defaultScene = {
         ground: 0,
         platforms: [{ x: 100, y: 100, w: 200 }],
@@ -77,28 +80,29 @@ let performanceBackground;
         sceneWidth: 200,
     };
 
-    // Load scenes from external file (scenesFile should be defined elsewhere)
+    // Load scenes from scenesfile.js
     let sceneTemplates = scenesFile;
 
-    let parallaxLayers; // will be populated in preload()
+    let parallaxLayers;
 
     // === ASSET LOADING ===
     window.preload = () => {
-        // Loading all our assets
-        performanceBackground = loadImage('./water/6.png');
-        benchy = loadModel('./LowPoly3DBenchy.obj'); // our main character!
-        font = loadFont('font.ttf');
+        // Loading assets
+        performanceBackground = loadImage('/assets/water/6.png');
+        benchy = loadModel('/assets/LowPoly3DBenchy.obj');
+        font = loadFont('/assets/font.ttf');
+        coinImage = loadImage('/assets/coin-gold.svg');
 
-        // Parallax background layers - these create nice depth
+        // Parallax background layers
         parallaxLayers = [
-            { y: -100, z: 45, speed: 0.11, img: loadImage('water/5.png'), tileCount: 20, offsetTiles: 3 },
-            { y: 145, z: 50, speed: 0.12, img: loadImage('water/4.png'), tileCount: 20, offsetTiles: 3 },
+            { y: -100, z: 45, speed: 0.11, img: loadImage('/assets/water/5.png'), tileCount: 20, offsetTiles: 3 },
+            { y: 145, z: 50, speed: 0.12, img: loadImage('/assets/water/4.png'), tileCount: 20, offsetTiles: 3 },
             // { y: -100, z: 15, speed: 0.35, img: loadImage('./clouds/1.png'), tileCount: 20, offsetTiles: 3 },  // disabled for now
-            { y: -100, z: 14, speed: 0.13, img: loadImage('./clouds/2.png'), tileCount: 20, offsetTiles: 3 },
-            { y: -100, z: 13, speed: 0.14, img: loadImage('./clouds/3.png'), tileCount: 20, offsetTiles: 3 },
-            { y: -60, z: 0, speed: 0.15, img: loadImage('./clouds/4.png'), tileCount: 20, offsetTiles: 3 }, // too many clouds
-            { y: 60, z: 15, speed: 0, img: loadImage('water/1.png'), tileCount: 20, offsetTiles: 3 }, // Bottom Sand with water
-            { y: 210, z: 15, speed: 0, img: loadImage('./water/2.png'), tileCount: 20, offsetTiles: 3 }, //sandy mountain thing
+            { y: -100, z: 14, speed: 0.13, img: loadImage('/assets/clouds/2.png'), tileCount: 20, offsetTiles: 3 },
+            { y: -100, z: 13, speed: 0.14, img: loadImage('/assets/clouds/3.png'), tileCount: 20, offsetTiles: 3 },
+            { y: -60, z: 0, speed: 0.15, img: loadImage('/assets/clouds/4.png'), tileCount: 20, offsetTiles: 3 }, // too many clouds
+            { y: 60, z: 15, speed: 0, img: loadImage('/assets/water/1.png'), tileCount: 20, offsetTiles: 3 }, // Bottom Sand with water
+            { y: 210, z: 15, speed: 0, img: loadImage('/assets/water/2.png'), tileCount: 20, offsetTiles: 3 }, //sandy mountain thing
         ];
     };
 
@@ -106,17 +110,17 @@ let performanceBackground;
     window.setup = () => {
         let canvas = createCanvas(800, 600, WEBGL);
         canvas.parent('game-canvas-container');
-        angleMode(DEGREES); // I find degrees easier to work with than radians
+        angleMode(DEGREES);
         textFont(font);
 
-        // Start with the default scene and add a few more
+        // Start with the default scene and add a 3 more
         addScene(defaultScene);
         for (let i = 1; i < 4; i++) {
             addScene();
         }
     };
 
-    // === COLLISION DETECTION HELPERS ===
+    // === PHYSICS AND HELPERS ===  
     function getPlayerHitbox() {
         // Calculate the player's collision box
         const halfW = 5 + hitboxOffsets.w;
@@ -131,29 +135,6 @@ let performanceBackground;
             front: benchyConfig.z - halfD + hitboxOffsets.z,
             back: benchyConfig.z + halfD + hitboxOffsets.z,
         };
-    }
-
-    // === DEBUG VISUALIZATION ===
-    function drawPlayerHitbox() {
-        if (!DEBUG_MODE) return; // safety check
-
-        let hitbox = getPlayerHitbox();
-
-        // Calculate center and dimensions
-        let w = hitbox.right - hitbox.left;
-        let h = hitbox.top - hitbox.bottom;
-        let d = hitbox.back - hitbox.front;
-        let centerX = (hitbox.left + hitbox.right) / 2;
-        let centerY = (hitbox.top + hitbox.bottom) / 2;
-        let centerZ = (hitbox.front + hitbox.back) / 2;
-
-        push();
-        noFill();
-        stroke(255, 0, 0); // bright red so it's easy to see
-        strokeWeight(2);
-        translate(centerX, -centerY, -centerZ); // flip Y for screen coords
-        box(w, h, d);
-        pop();
     }
 
     function isOnGround() {
@@ -179,114 +160,6 @@ let performanceBackground;
         }
 
         return false; // not on any platform
-    }
-
-    function applyGravity() {
-        const playerHitbox = getPlayerHitbox();
-        const currentFeetY = playerHitbox.bottom;
-
-        // Apply gravity force
-        benchyConfig.velocityY += benchyConfig.gravity;
-        const nextY = benchyConfig.y + benchyConfig.velocityY;
-        const nextFeetY = nextY - (benchyConfig.y - playerHitbox.bottom);
-
-        // Only check for platform collisions when falling
-        if (benchyConfig.velocityY < 0) {
-            let landedOnPlatform = false;
-            let highestPlatformTop = -Infinity;
-
-            for (let scene of scenes) {
-                for (let platform of scene.platforms) {
-                    const platformTop = platform.y + (platform.h / 2 || 10);
-                    const platformLeft = scene.startX + platform.x - platform.w / 2;
-                    const platformRight = scene.startX + platform.x + platform.w / 2;
-
-                    // Check horizontal overlap
-                    const horizontalOverlap = playerHitbox.right > platformLeft && playerHitbox.left < platformRight;
-
-                    // Check if we're landing on this platform
-                    if (horizontalOverlap && currentFeetY >= platformTop && nextFeetY <= platformTop) {
-                        landedOnPlatform = true;
-                        highestPlatformTop = Math.max(highestPlatformTop, platformTop);
-                    }
-
-                    // Debug visualization for platforms
-                    if (DEBUG_MODE) {
-                        push();
-                        rectMode(CENTER);
-                        noFill();
-                        stroke('lime');
-                        strokeWeight(2);
-                        translate(0, 0, platform.d || 50);
-                        rect((platformLeft + platformRight) / 2, -platform.y, platform.w, platform.h || 10);
-                        pop();
-                    }
-                }
-            }
-
-            // Land on the highest platform we collided with
-            if (landedOnPlatform) {
-                benchyConfig.y = highestPlatformTop + (benchyConfig.y - playerHitbox.bottom);
-                benchyConfig.velocityY = 0;
-                benchyConfig.isJumping = false;
-                return;
-            }
-        }
-
-        // No collision, update position normally
-        benchyConfig.y = nextY;
-    }
-
-    function handleMovement() {
-        // Determine target horizontal velocity based on input
-        let targetVelocityX = 0;
-        if (dPressed) {
-            targetVelocityX = benchyConfig.speed;
-        } else if (aPressed) {
-            targetVelocityX = -benchyConfig.speed;
-        }
-
-        // Apply different acceleration based on whether we're grounded
-        if (isOnGround()) {
-            // Ground movement - more responsive
-            benchyConfig.velocityX += (targetVelocityX - benchyConfig.velocityX) * benchyConfig.ga;
-        } else {
-            // Air movement - less control
-            benchyConfig.velocityX += (targetVelocityX - benchyConfig.velocityX) * benchyConfig.acf;
-        }
-
-        // Clean up tiny velocities to prevent jitter
-        if (Math.abs(benchyConfig.velocityX) < 0.1) {
-            benchyConfig.velocityX = 0;
-        }
-
-        // Update facing direction based on movement
-        if (benchyConfig.velocityX < 0) {
-            faceForward = false;
-        } else if (benchyConfig.velocityX > 0) {
-            faceForward = true;
-        }
-
-        // Apply horizontal movement
-        benchyConfig.x += benchyConfig.velocityX;
-    }
-
-    function handleJump() {
-        // Only allow jumping when on ground and jump keys are pressed
-        if ((spacePressed || wPressed) && isOnGround()) {
-            benchyConfig.velocityY = benchyConfig.jumpForce;
-            benchyConfig.isJumping = true;
-        }
-    }
-
-    function handleSprint() {
-        // Gradually adjust speed towards target (sprint vs walk)
-        const targetSpeed = shiftPressed ? benchyConfig.sprintSpeed : benchyConfig.walkSpeed;
-        if (benchyConfig.speed < targetSpeed) {
-            benchyConfig.speed += 1; // speed up
-        } else if (benchyConfig.speed > targetSpeed) {
-            benchyConfig.speed -= 1; // slow down
-        }
     }
 
     function checkObjectCollisions() {
@@ -365,6 +238,115 @@ let performanceBackground;
                     }
                 }
             }
+        }
+    }
+
+    function applyGravity() {
+        const playerHitbox = getPlayerHitbox();
+        const currentFeetY = playerHitbox.bottom;
+
+        // Apply gravity force
+        benchyConfig.velocityY += benchyConfig.gravity;
+        const nextY = benchyConfig.y + benchyConfig.velocityY;
+        const nextFeetY = nextY - (benchyConfig.y - playerHitbox.bottom);
+
+        // Only check for platform collisions when falling
+        if (benchyConfig.velocityY < 0) {
+            let landedOnPlatform = false;
+            let highestPlatformTop = -Infinity;
+
+            for (let scene of scenes) {
+                for (let platform of scene.platforms) {
+                    const platformTop = platform.y + (platform.h / 2 || 10);
+                    const platformLeft = scene.startX + platform.x - platform.w / 2;
+                    const platformRight = scene.startX + platform.x + platform.w / 2;
+
+                    // Check horizontal overlap
+                    const horizontalOverlap = playerHitbox.right > platformLeft && playerHitbox.left < platformRight;
+
+                    // Check if we're landing on this platform
+                    if (horizontalOverlap && currentFeetY >= platformTop && nextFeetY <= platformTop) {
+                        landedOnPlatform = true;
+                        highestPlatformTop = Math.max(highestPlatformTop, platformTop);
+                    }
+
+                    // Debug visualization for platforms
+                    if (DEBUG_MODE) {
+                        push();
+                        rectMode(CENTER);
+                        noFill();
+                        stroke('lime');
+                        strokeWeight(2);
+                        translate(0, 0, platform.d || 50);
+                        rect((platformLeft + platformRight) / 2, -platform.y, platform.w, platform.h || 10);
+                        pop();
+                    }
+                }
+            }
+
+            // Land on the highest platform we collided with
+            if (landedOnPlatform) {
+                benchyConfig.y = highestPlatformTop + (benchyConfig.y - playerHitbox.bottom);
+                benchyConfig.velocityY = 0;
+                benchyConfig.isJumping = false;
+                return;
+            }
+        }
+
+        // No collision, update position normally
+        benchyConfig.y = nextY;
+    }
+
+    // === MOVEMENT HANDLERS ===
+    function handleMovement() {
+        // Determine target horizontal velocity based on input
+        let targetVelocityX = 0;
+        if (dPressed) {
+            targetVelocityX = benchyConfig.speed;
+        } else if (aPressed) {
+            targetVelocityX = -benchyConfig.speed;
+        }
+
+        // Apply different acceleration based on whether we're grounded
+        if (isOnGround()) {
+            // Ground movement - more responsive
+            benchyConfig.velocityX += (targetVelocityX - benchyConfig.velocityX) * benchyConfig.ga;
+        } else {
+            // Air movement - less control
+            benchyConfig.velocityX += (targetVelocityX - benchyConfig.velocityX) * benchyConfig.acf;
+        }
+
+        // Clean up tiny velocities to prevent jitter
+        if (Math.abs(benchyConfig.velocityX) < 0.1) {
+            benchyConfig.velocityX = 0;
+        }
+
+        // Update facing direction based on movement
+        if (benchyConfig.velocityX < 0) {
+            faceForward = false;
+        } else if (benchyConfig.velocityX > 0) {
+            faceForward = true;
+        }
+
+        // Apply horizontal movement
+        benchyConfig.x += benchyConfig.velocityX;
+    }
+
+    function handleJump() {
+        // Only allow jumping when on ground and jump keys are pressed
+        if ((spacePressed || wPressed) && isOnGround()) {
+            benchyConfig.velocityY = benchyConfig.jumpForce;
+            benchyConfig.isJumping = true;
+        }
+    }
+
+    function handleSprint() {
+        // Gradually adjust speed towards target (sprint vs walk)
+        const targetSpeed = shiftPressed ? benchyConfig.sprintSpeed : benchyConfig.walkSpeed;
+        if (benchyConfig.speed < targetSpeed) {
+            benchyConfig.speed += 1; // speed up
+        } else if (benchyConfig.speed > targetSpeed) {
+            benchyConfig.speed -= 1; // slow down
         }
     }
 
@@ -447,7 +429,7 @@ let performanceBackground;
             for (const layer of parallaxLayers) {
                 drawBackground(layer);
             }
-            let direction = createVector(0, 50, -5);
+            let direction = createVector(45, 45, -45);
             directionalLight(255, 228, 156, direction);
         } else {
             push();
@@ -549,13 +531,14 @@ let performanceBackground;
                 pop();
             }
 
-            // Draw coins (if any)
+            // Draw coins (if any) using an svg instead of 3d obj
             if (scene.coins) {
+                let coinOffset = { x: 16, y: 17 };
                 for (let coin of scene.coins) {
                     push();
-                    fill(255, 223, 0); // gold color
-                    translate(scene.startX + coin.x, -coin.y, 0);
-                    sphere(10);
+                    translate(scene.startX + coin.x - coinOffset.x, -coin.y - coinOffset.y, 0);
+                    image(coinImage, 0, 0, 35, 35);
+
                     pop();
                 }
             }
@@ -666,7 +649,7 @@ let performanceBackground;
         textFont(font);
         textSize(14);
         textAlign(RIGHT, TOP);
-
+        translate(benchyConfig.x, 0, 35);
         // Debug info lines
         let debugLines = [
             `x: ${benchyConfig.x.toFixed(1)}`,
@@ -711,6 +694,28 @@ let performanceBackground;
         pop();
     }
 
+    function drawPlayerHitbox() {
+        if (!DEBUG_MODE) return; // safety check
+
+        let hitbox = getPlayerHitbox();
+
+        // Calculate center and dimensions
+        let w = hitbox.right - hitbox.left;
+        let h = hitbox.top - hitbox.bottom;
+        let d = hitbox.back - hitbox.front;
+        let centerX = (hitbox.left + hitbox.right) / 2;
+        let centerY = (hitbox.top + hitbox.bottom) / 2;
+        let centerZ = (hitbox.front + hitbox.back) / 2;
+
+        push();
+        noFill();
+        stroke(255, 0, 0); // bright red so it's easy to see
+        strokeWeight(2);
+        translate(centerX, -centerY, -centerZ); // flip Y for screen coords
+        box(w, h, d);
+        pop();
+    }
+
     // === INPUT HANDLING ===
     window.keyPressed = () => {
         // Map key codes to input state
@@ -751,6 +756,7 @@ let performanceBackground;
         modal.classList.remove('hidden');
     };
 
+    // === API Score Submission ===
     window.submitscore = () => {
         $.ajax({
             url: 'https://p5api.retreat896.com/addScore',
