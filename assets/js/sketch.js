@@ -19,7 +19,7 @@ let vert, frag, bgVert, bgFrag;
         uuid = crypto.randomUUID();
         localStorage.setItem('uuid', uuid);
     }
-
+    console.log(window.isFullscreen);
     // === INPUT HANDLING ===
     let spacePressed = false;
     let wPressed = false;
@@ -97,7 +97,7 @@ let vert, frag, bgVert, bgFrag;
         benchy = loadModel('/assets/LowPoly3DBenchy.obj');
         font = loadFont('/assets/font.ttf');
         coinImage = loadImage('/assets/coin-gold.svg');
-        
+
         // Load shaders
         vert = loadStrings('/assets/shaders/coin.vert');
         frag = loadStrings('/assets/shaders/coin.frag');
@@ -106,20 +106,30 @@ let vert, frag, bgVert, bgFrag;
 
         // Parallax background layers
         parallaxLayers = [
-            { y: -100, z: 45, speed: 0.11, img: loadImage('/assets/water/5.png'), tileCount: 20, offsetTiles: 3, isCloud: true },
-            { y: 145, z: 50, speed: 0.12, img: loadImage('/assets/water/4.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
-            // { y: -100, z: 15, speed: 0.35, img: loadImage('./clouds/1.png'), tileCount: 20, offsetTiles: 3 },  // disabled for now
+            { y: -100, z: 15, speed: 0.11, img: loadImage('/assets/water/5.png'), tileCount: 20, offsetTiles: 3, isCloud: true },
+            //  { y: -350, z: 15, speed: 0.12, img: loadImage('/assets/water/4.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
+            //{ y: -200, z: 13, speed: 0.35, img: loadImage('./clouds/1.png'), tileCount: 20, offsetTiles: 3 },  // disabled for now
             { y: -100, z: 14, speed: 0.13, img: loadImage('/assets/clouds/2.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
             { y: -100, z: 13, speed: 0.14, img: loadImage('/assets/clouds/3.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
             { y: -60, z: 0, speed: 0.15, img: loadImage('/assets/clouds/4.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
-            { y: 60, z: 15, speed: 0, img: loadImage('/assets/water/1.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
-            { y: 210, z: 15, speed: 0, img: loadImage('/assets/water/2.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
+            { y: 0, z: 14, speed: 0, img: loadImage('/assets/water/1.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
+            { y: 50, z: 15, speed: 0, img: loadImage('/assets/water/1.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
+            { y: 100, z: 16, speed: 0, img: loadImage('/assets/water/1.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
+            { y: 150, z: 17, speed: 0, img: loadImage('/assets/water/1.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
+            // { y: 200, z: 15, speed: 0, img: loadImage('/assets/water/2.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
+            { y: 260, z: 14, speed: 0, img: loadImage('/assets/water/2.png'), tileCount: 20, offsetTiles: 3, isCloud: false },
         ];
     };
 
     // === INITIALIZATION ===
     window.setup = () => {
         let canvas = createCanvas(800, 600, WEBGL);
+        if (window.isFullscreen) {
+            let wHeight = window.windowHeight;
+            let wWidth = window.windowWidth;
+
+            resizeCanvas(wWidth, wHeight);
+        }
         coinShader = createShader(vert.join('\n'), frag.join('\n'));
         backgroundShader = createShader(bgVert.join('\n'), bgFrag.join('\n'));
         canvas.parent('game-canvas-container');
@@ -405,10 +415,11 @@ let vert, frag, bgVert, bgFrag;
         textSize(24);
         textAlign(RIGHT, TOP);
         fill(0);
-
+        let gameWidth = $("#game-canvas-container")[0].clientWidth;
+        let gameHeight = $("#game-canvas-container")[0].clientHeight
         // Position relative to player but fixed on screen
-        let screenX = benchyConfig.x - 20;
-        let screenY = -200;
+        let screenX = benchyConfig.x - (gameWidth/2)+300 +20;
+        let screenY = -(gameHeight/2)+50;
         translate(0, 0, 10); // bring forward a bit
 
         // Display current game stats
@@ -554,7 +565,7 @@ let vert, frag, bgVert, bgFrag;
                     coinShader.setUniform('time', millis());
                     texture(coinImage);
                     translate(scene.startX + coin.x, -coin.y, 0);
-                    
+
                     plane(35, 35);
                     pop();
                 }

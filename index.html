@@ -18,7 +18,52 @@
         <!-- Custom Game Scripts (assumed to be in the same folder) -->
         <script src="./assets/js/scenesFile.js"></script>
         <!-- <script src="sketch.js"></script> -->
+        <script>
+            function toggleFullscreen(forceFullscreen) {
+                if (forceFullscreen) {
+                    window.isFullscreen = true;
+                    let wHeight = window.windowHeight;
+                    let wWidth = window.windowWidth;
+                    resizeCanvas(wWidth, wHeight);
+                    $('#game-canvas-container').prop('style', 'width: 100%; height: 100vh');
+                    $('#maincontain').toggleClass('p-4 lg:p-8 gap-8 mt-12');
+                    $('.hideiffs').hide();
+                    return;
+                }
+                if (window.isFullscreen) {
+                    window.isFullscreen = false;
+                    resizeCanvas(800, 600);
+                    $('#game-canvas-container').prop('style', 'width: 800px; height: 600px');
+                    $('#maincontain').toggleClass('p-4 lg:p-8 gap-8 mt-12');
+                    $('.hideiffs').show();
+                } else {
+                    window.isFullscreen = true;
+                    let wHeight = window.windowHeight;
+                    let wWidth = window.windowWidth;
+                    resizeCanvas(wWidth, wHeight);
+                    $('#game-canvas-container').prop('style', 'width: 100%; height: 100vh');
+                    $('#maincontain').toggleClass('p-4 lg:p-8 gap-8 mt-12');
+                    $('.hideiffs').hide();
+                }
+            }
+            window.onresize = () => {
+                console.log('Resized');
+                if (window.isFullscreen) {
+                    let wHeight = window.windowHeight;
+                    let wWidth = window.windowWidth;
 
+                    resizeCanvas(wWidth, wHeight);
+                } else {
+                    resizeCanvas(800, 600);
+                }
+            };
+            $(document).ready(() => {
+                if (window.location.search.indexOf('fullscreen=true') > -1) {
+                    window.isFullscreen = true;
+                    toggleFullscreen(true);
+                }
+            });
+        </script>
         <style>
             /* Custom font and basic body styling */
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -29,7 +74,7 @@
     </head>
 
     <body class="bg-gray-900 text-white antialiased h-full">
-        <div id="nav" class="fixed top-0 left-0 right-0 z-50 bg-gray-800 shadow-md">
+        <div id="nav" class="fixed top-0 left-0 right-0 z-50 bg-gray-800 shadow-md hideiffs transition-all">
             <div class="flex items-center justify-between px-4 py-2">
                 <!-- Brand -->
                 <h1 class="text-xl lg:text-2xl font-extrabold text-blue-400">Ocean of Benchy</h1>
@@ -39,9 +84,9 @@
             </div>
         </div>
 
-        <div class="flex flex-col lg:flex-row w-full p-4 lg:p-8 gap-8 mt-12">
+        <div id="maincontain" class="flex flex-col lg:flex-row w-full p-4 lg:p-8 gap-8 mt-12 transition-all">
             <!-- Left Spacer (Hidden on screens smaller than lg) -->
-            <div class="lg:block lg:flex-1">
+            <div class="lg:block lg:flex-1 hideiffs transition-all">
                 <p class="mt-12 text-gray-400">Controls: [A] / [D] to Move, [Space] to Jump, [Shift] to Sprint</p>
                 <div>
                     <!-- Debug Toggle Checkbox -->
@@ -59,17 +104,22 @@
             </div>
 
             <!-- Center: Game Canvas Container -->
-            <main class="flex flex-col items-center">
-                <h1 class="text-3xl font-bold text-blue-400 mb-4">Ocean of Benchy</h1>
+            <main class="flex flex-col items-center transition-all">
+                <h1 class="text-3xl font-bold text-blue-400 mb-4 hideiffs">Ocean of Benchy</h1>
 
                 <!-- We'll give it an ID to make it easy to target -->
-                <div id="game-canvas-container" class="bg-black rounded-lg shadow-2xl shadow-blue-500/20 overflow-hidden" style="width: 800px; height: 600px">
+                <div id="game-canvas-container" class="relative bg-black rounded-lg shadow-2xl shadow-blue-500/20 overflow-hidden transition-all" style="width: 800px; height: 600px">
                     <script src="./assets/js/sketch.js"></script>
+                    <div class="absolute top-5 right-5 z-10 rounded-full bg-gray-700 p-2" onclick="toggleFullscreen()">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                        </svg>
+                    </div>
                 </div>
             </main>
 
             <!-- Right: High Score Board -->
-            <aside class="mt-12 w-full lg:w-90 xl:w-90 flex-1 overflow-y-auto">
+            <aside class="mt-12 w-full lg:w-90 xl:w-90 flex-1 overflow-y-auto hideiffs">
                 <div class="bg-gray-800 rounded-lg shadow-lg p-6 h-full">
                     <h2 class="text-2xl font-bold text-center border-b border-gray-700 pb-3 mb-4">
                         <span class="text-yellow-400">🏆</span>
